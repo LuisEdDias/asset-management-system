@@ -1,0 +1,121 @@
+############################################
+# .NET / Visual Studio
+############################################
+
+# Build outputs
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / Resharper
+.idea/
+*.DotSettings.user
+
+# Visual Studio Code
+.vscode/
+
+# Visual Studio cache
+.vs/
+
+############################################
+# .NET Core / EF Core
+############################################
+
+# EF Core
+**/Migrations/*.Designer.cs
+**/Migrations/*.Designer.cs.old
+**/Migrations/*.snapshots
+
+# dotnet tools
+.dotnet/
+.dotnet/tools/
+
+############################################
+# Blazor
+############################################
+
+# Blazor WebAssembly cache (if any)
+wwwroot/service-worker.published.js
+wwwroot/service-worker.js
+
+############################################
+# Logs
+############################################
+
+*.log
+logs/
+log/
+
+############################################
+# OS generated files
+############################################
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+############################################
+# Environment / Secrets
+############################################
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# App settings overrides
+appsettings.Development.json
+appsettings.Local.json
+
+############################################
+# Docker
+############################################
+
+# Docker volumes
+**/docker-data/
+**/pgdata/
+
+# Docker override files
+docker-compose.override.yml
+
+############################################
+# Test results
+############################################
+
+TestResults/
+
+############################################
+# Coverage
+############################################
+
+coverage/
+*.coverage
+*.coveragexml
+
+############################################
+# NuGet
+############################################
+
+# NuGet packages cache (optional, usually global)
+packages/
+
+############################################
+# Temporary / backups
+############################################
+
+*.tmp
+*.bak
+*.swp
