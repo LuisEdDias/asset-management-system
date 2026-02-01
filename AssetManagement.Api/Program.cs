@@ -1,27 +1,27 @@
 using AssetManagement.Api.Middlewares;
 using AssetManagement.Application.AssetTypes;
 using AssetManagement.Application.Abstractions.Persistence;
+using AssetManagement.Application.Users;
 using AssetManagement.Infrastructure.Persistence;
 using AssetManagement.Infrastructure.Persistence.Repositories;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Localization;
-using AssetManagement.Api;
+using AssetManagement.Application.Users.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- CONFIGURATIONS ---
 builder.Services.AddControllers(options =>
 {
-    options.Filters.Add<ModelStateValidationFilter>();
+    options.Filters.Add<FluentValidationFilter>();
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Localization
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateUserRequestValidator>();
 
 // Database
 builder.Services.AddDbContext<AppDbContext>(opt =>
@@ -30,7 +30,9 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 // Repositories & Services
 builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 builder.Services.AddScoped<IAssetTypeRepository, AssetTypeRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<AssetTypeService>();
+builder.Services.AddScoped<UserService>();
 
 // API Behavior
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -57,15 +59,5 @@ app.UseRequestLocalization(localizationOptions);
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.MapControllers();
-
-app.MapGet("/__loc", (IStringLocalizer<SharedMessages> loc) =>
-{
-    var s = loc["AssetType.DuplicateName"];
-    return new
-    {
-        value = s.Value,
-        notFound = s.ResourceNotFound
-    };
-});
 
 app.Run();

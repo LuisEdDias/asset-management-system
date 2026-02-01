@@ -1,6 +1,6 @@
 namespace AssetManagement.Application.Exceptions;
 
-public sealed class AssetTypeInUseException : Exception
+public sealed class AssetTypeInUseException : AppException
 {
     public string AssetTypeName { get; }
     public AssetTypeInUseException(string assetTypeName)
