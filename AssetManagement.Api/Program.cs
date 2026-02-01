@@ -1,4 +1,5 @@
 using AssetManagement.Api.Middlewares;
+using AssetManagement.Application.Assets;
 using AssetManagement.Application.AssetTypes;
 using AssetManagement.Application.Abstractions.Persistence;
 using AssetManagement.Application.Users;
@@ -31,8 +32,11 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 builder.Services.AddScoped<IAssetTypeRepository, AssetTypeRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAssetRepository, AssetRepository>();
+builder.Services.AddScoped<IAssetAllocationLogRepository, AssetAllocationLogRepository>();
 builder.Services.AddScoped<AssetTypeService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<AssetService>();
 
 // API Behavior
 builder.Services.Configure<ApiBehaviorOptions>(options =>

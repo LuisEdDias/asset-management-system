@@ -6,11 +6,11 @@ namespace AssetManagement.Api.Controllers;
 
 [ApiController]
 [Route("users")]
-public sealed class UsersController : ControllerBase
+public sealed class UserController : ControllerBase
 {
     private readonly UserService _service;
 
-    public UsersController(UserService service)
+    public UserController(UserService service)
     {
         _service = service;
     }

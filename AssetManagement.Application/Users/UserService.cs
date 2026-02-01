@@ -1,4 +1,5 @@
 using AssetManagement.Application.Abstractions.Persistence;
+using AssetManagement.Application.Assets.Dtos;
 using AssetManagement.Application.Users.Dtos;
 using AssetManagement.Application.Exceptions;
 using AssetManagement.Domain.Entities;
@@ -8,11 +9,13 @@ namespace AssetManagement.Application.Users;
 public sealed class UserService
 {
     private readonly IUserRepository _users;
+    private readonly IAssetAllocationLogRepository _logRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UserService(IUserRepository users, IUnitOfWork uow)
+    public UserService(IUserRepository users, IAssetAllocationLogRepository logs, IUnitOfWork uow)
     {
         _users = users;
+        _logRepository = logs;
         _unitOfWork = uow;
     }
 
@@ -69,6 +72,21 @@ public sealed class UserService
         await _unitOfWork.SaveChangesAsync(ct);
 
         return ToResponse(user);
+    }
+
+    public async Task<List<AssetAllocationLogResponse>> GetAllocationLogAsync(long id, CancellationToken ct)
+    {
+        var logs = await _logRepository.GetHistoryAsync(null, id, ct);
+
+        return logs.Select(l => new AssetAllocationLogResponse(
+            l.Id,
+            l.AssetId,
+            l.Asset.Name,
+            l.UserId,
+            l.User.Name,
+            l.Action.ToString(),
+            l.AtUtc
+        )).ToList();
     }
 
     private static string NormalizeEmail(string email)

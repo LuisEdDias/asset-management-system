@@ -6,11 +6,11 @@ namespace AssetManagement.Api.Controllers;
 
 [ApiController]
 [Route("asset-types")]
-public sealed class AssetTypesController : ControllerBase
+public sealed class AssetTypeController : ControllerBase
 {
     private readonly AssetTypeService _service;
 
-    public AssetTypesController(AssetTypeService service) => _service = service;
+    public AssetTypeController(AssetTypeService service) => _service = service;
 
     [HttpGet]
     public async Task<ActionResult<List<AssetTypeResponse>>> GetAll(CancellationToken ct)

@@ -162,4 +162,16 @@
   <data name="Validation.EmailInvalid" xml:space="preserve">
     <value>Email format invalid.</value>
   </data>
+  <data name="AssetType.NotFound" xml:space="preserve">
+    <value>Category not found.</value>
+  </data>
+  <data name="Asset.DuplicateSerial" xml:space="preserve">
+    <value>Serial number already registered.</value>
+  </data>
+  <data name="Asset.NotFound" xml:space="preserve">
+    <value>Asset not found.</value>
+  </data>
+  <data name="Asset.ValueGreaterThanOrZero" xml:space="preserve">
+    <value>Value must be greater than or equal to zero.</value>
+  </data>
 </root>

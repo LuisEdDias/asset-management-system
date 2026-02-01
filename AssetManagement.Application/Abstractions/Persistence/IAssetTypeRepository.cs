@@ -7,8 +7,8 @@ public interface IAssetTypeRepository
     Task<List<AssetType>> GetAllAsyncNoTracking(CancellationToken ct);
     Task<AssetType?> GetByIdAsync(long id, CancellationToken ct);
 
+    Task<bool> ExistsAsync(long id, CancellationToken ct);
     Task<bool> ExistsByNameAsync(string normalizedName, CancellationToken ct);
-
     Task<bool> IsInUseAsync(long assetTypeId, CancellationToken ct);
     
     void Add(AssetType assetType);

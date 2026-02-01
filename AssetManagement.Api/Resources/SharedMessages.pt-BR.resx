@@ -162,4 +162,16 @@
   <data name="Validation.EmailInvalid" xml:space="preserve">
     <value>Email em formato inválido.</value>
   </data>
+  <data name="AssetType.NotFound" xml:space="preserve">
+    <value>Categoria não encontrada.</value>
+  </data>
+  <data name="Asset.DuplicateSerial" xml:space="preserve">
+    <value>Número de série já cadastrado no sitema.</value>
+  </data>
+  <data name="Asset.NotFound" xml:space="preserve">
+    <value>Item não encontrado.</value>
+  </data>
+  <data name="Asset.ValueGreaterThanOrZero" xml:space="preserve">
+    <value>O valor precisa ser maior ou igual a zero.</value>
+  </data>
 </root>
