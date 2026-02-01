@@ -7,6 +7,6 @@ public sealed class EfUnitOfWork : IUnitOfWork
 
     public EfUnitOfWork(AppDbContext db) => _db = db;
 
-    public async Task<int> SaveChangesAsync(CancellationToken ct)
+    public async Task SaveChangesAsync(CancellationToken ct)
         => await _db.SaveChangesAsync(ct);
 }

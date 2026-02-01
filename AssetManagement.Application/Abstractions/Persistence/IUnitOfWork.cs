@@ -2,5 +2,5 @@ namespace AssetManagement.Application.Abstractions.Persistence;
 
 public interface IUnitOfWork
 {
-    Task<int> SaveChangesAsync(CancellationToken ct);
+    Task SaveChangesAsync(CancellationToken ct);
 }
