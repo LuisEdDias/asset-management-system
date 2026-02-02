@@ -70,6 +70,62 @@ namespace AssetManagement.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_assets_assignment_consistency", "(\r\n                (\"Status\" = 'InUse' AND \"AssignedToUserId\" IS NOT NULL AND \"AssignedAtUtc\" IS NOT NULL)\r\n                OR\r\n                (\"Status\" <> 'InUse' AND \"AssignedToUserId\" IS NULL AND \"AssignedAtUtc\" IS NULL)\r\n                )");
                         });
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            AssetTypeId = 1L,
+                            Name = "MacBook Pro M3",
+                            SerialNumber = "SN123",
+                            Status = "Available",
+                            Value = 15000.00m
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            AssetTypeId = 2L,
+                            Name = "Acer Aspire 5",
+                            SerialNumber = "SN456",
+                            Status = "Available",
+                            Value = 3500.00m
+                        },
+                        new
+                        {
+                            Id = 3L,
+                            AssetTypeId = 2L,
+                            Name = "Dell UltraSharp 27",
+                            SerialNumber = "SN789",
+                            Status = "Maintenance",
+                            Value = 3500.00m
+                        },
+                        new
+                        {
+                            Id = 4L,
+                            AssetTypeId = 3L,
+                            Name = "Dell Tower Plus Intel Core Ultra 5",
+                            SerialNumber = "SN987",
+                            Status = "Available",
+                            Value = 9999.99m
+                        },
+                        new
+                        {
+                            Id = 5L,
+                            AssetTypeId = 4L,
+                            Name = "Mouse Logitech",
+                            SerialNumber = "SN654",
+                            Status = "Available",
+                            Value = 30.00m
+                        },
+                        new
+                        {
+                            Id = 6L,
+                            AssetTypeId = 4L,
+                            Name = "Multifuncional HP",
+                            SerialNumber = "SN321",
+                            Status = "Maintenance",
+                            Value = 1500.00m
+                        });
                 });
 
             modelBuilder.Entity("AssetManagement.Domain.Entities.AssetAllocationLog", b =>
@@ -124,6 +180,28 @@ namespace AssetManagement.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("asset_types", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Name = "NOTEBOOK"
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            Name = "MONITOR"
+                        },
+                        new
+                        {
+                            Id = 3L,
+                            Name = "DESKTOP"
+                        },
+                        new
+                        {
+                            Id = 4L,
+                            Name = "PERIFÉRICOS"
+                        });
                 });
 
             modelBuilder.Entity("AssetManagement.Domain.Entities.User", b =>
@@ -150,6 +228,26 @@ namespace AssetManagement.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("users", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Email = "ana@mail.com",
+                            Name = "Ana"
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            Email = "luis@mail.com",
+                            Name = "Luís"
+                        },
+                        new
+                        {
+                            Id = 3L,
+                            Email = "jose@mail.com",
+                            Name = "José"
+                        });
                 });
 
             modelBuilder.Entity("AssetManagement.Domain.Entities.Asset", b =>
