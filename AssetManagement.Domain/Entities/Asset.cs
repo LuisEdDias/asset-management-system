@@ -103,7 +103,7 @@ public class Asset
         EnsureConsistency();
     }
 
-    public void CompleteMaintenance(bool isOperational)
+    public void CompleteMaintenance()
     {
         if (Status != AssetStatus.Maintenance)
             throw new InvalidOperationException("Only assets under maintenance can complete maintenance.");

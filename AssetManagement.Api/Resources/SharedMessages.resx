@@ -174,4 +174,10 @@
   <data name="Asset.ValueGreaterThanOrZero" xml:space="preserve">
     <value>Value must be greater than or equal to zero.</value>
   </data>
+  <data name="Asset.MaintenanceInvalid" xml:space="preserve">
+    <value>Only available items can be sent for maintenance.</value>
+  </data>
+  <data name="Asset.MaintenanceReturnInvalid" xml:space="preserve">
+    <value>Only items undergoing maintenance can be returned.</value>
+  </data>
 </root>

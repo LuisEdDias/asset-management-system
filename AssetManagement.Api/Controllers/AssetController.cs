@@ -59,6 +59,20 @@ public sealed class AssetsController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id:long}/maintenance")]
+    public async Task<IActionResult> MarkMaintenance(long id, CancellationToken ct)
+    {
+        await _service.MarkMaintenanceAsync(id, ct);
+        return NoContent();
+    }
+
+    [HttpPost("{id:long}/maintenance/complete")]
+    public async Task<IActionResult> CompleteMaintenance(long id, CancellationToken ct)
+    {
+        await _service.CompleteMaintenanceAsync(id, ct);
+        return NoContent();
+    }
+
     [HttpGet("history")]
     public async Task<ActionResult<List<AssetAllocationLogResponse>>> GetAllHistory(CancellationToken ct)
     {

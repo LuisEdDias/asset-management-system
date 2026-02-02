@@ -130,6 +130,32 @@ public sealed class AssetService
         await _unitOfWork.SaveChangesAsync(ct);
     }
 
+    public async Task MarkMaintenanceAsync(long assetId, CancellationToken ct)
+    {
+        var asset = await _assetRepository.GetByIdAsync(assetId, ct)
+            ?? throw new AssetNotFoundException(assetId);
+
+        if (asset.Status != AssetStatus.Available)
+            throw new AssetMaintenanceValidationException(assetId);
+            
+        asset.MarkMaintenance();
+
+        await _unitOfWork.SaveChangesAsync(ct);
+    }
+
+    public async Task CompleteMaintenanceAsync(long assetId, CancellationToken ct)
+    {
+        var asset = await _assetRepository.GetByIdAsync(assetId, ct)
+            ?? throw new AssetNotFoundException(assetId);
+
+        if (asset.Status != AssetStatus.Maintenance)
+            throw new AssetMaintenanceReturnValidationException(assetId);
+
+        asset.CompleteMaintenance();
+
+        await _unitOfWork.SaveChangesAsync(ct);
+    }
+
     public async Task<List<AssetAllocationLogResponse>> GetHistoryAsync(long? assetId, long? userId, CancellationToken ct)
     {
         var logs = await _logRepository.GetHistoryAsync(assetId, userId, ct);

@@ -562,6 +562,173 @@ public sealed class AssetServiceTests
     }
 
     [Fact]
+    public async Task MarkMaintenanceAsync_when_asset_missing_should_throw_and_not_save()
+    {
+        // arrange
+        var ct = CancellationToken.None;
+        var assetId = 1L;
+
+        _assetRepo.Setup(r => r.GetByIdAsync(assetId, ct)).ReturnsAsync((Asset?)null);
+
+        var sut = CreateSut();
+
+        // act
+        Func<Task> act = () => sut.MarkMaintenanceAsync(assetId, ct);
+
+        // assert
+        await act.Should().ThrowAsync<AssetNotFoundException>();
+
+        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _assetRepo.VerifyAll();
+    }
+
+    [Fact]
+    public async Task MarkMaintenanceAsync_when_asset_not_available_should_throw_validation_and_not_save()
+    {
+        // arrange
+        var ct = CancellationToken.None;
+        var assetId = 1L;
+
+        var asset = AssetFactory.NewInUse(
+            name: "Notebook",
+            serial: "S",
+            typeId: 1L,
+            value: 100m,
+            assignedTo: 10L,
+            assignedAtUtc: DateTimeOffset.UtcNow.AddMinutes(-5));
+
+        _assetRepo.Setup(r => r.GetByIdAsync(assetId, ct)).ReturnsAsync(asset);
+
+        var sut = CreateSut();
+
+        // act
+        Func<Task> act = () => sut.MarkMaintenanceAsync(assetId, ct);
+
+        // assert
+        await act.Should().ThrowAsync<AssetMaintenanceValidationException>();
+
+        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        asset.Status.Should().Be(AssetStatus.InUse);
+        _assetRepo.VerifyAll();
+    }
+
+    [Fact]
+    public async Task MarkMaintenanceAsync_when_available_should_set_maintenance_clear_assignment_and_save()
+    {
+        // arrange
+        var ct = CancellationToken.None;
+        var assetId = 1L;
+
+        var asset = AssetFactory.NewAvailable(
+            name: "Mouse",
+            serial: "S",
+            typeId: 1L,
+            value: 1m);
+
+        _assetRepo.Setup(r => r.GetByIdAsync(assetId, ct)).ReturnsAsync(asset);
+
+        _uow.Setup(u => u.SaveChangesAsync(ct)).Returns(Task.CompletedTask);
+
+        var sut = CreateSut();
+
+        // act
+        await sut.MarkMaintenanceAsync(assetId, ct);
+
+        // assert
+        asset.Status.Should().Be(AssetStatus.Maintenance);
+        asset.AssignedToUserId.Should().BeNull();
+        asset.AssignedAtUtc.Should().BeNull();
+
+        _assetRepo.VerifyAll();
+        _uow.VerifyAll();
+    }
+
+    [Fact]
+    public async Task CompleteMaintenanceAsync_when_asset_missing_should_throw_and_not_save()
+    {
+        // arrange
+        var ct = CancellationToken.None;
+        var assetId = 1L;
+
+        _assetRepo.Setup(r => r.GetByIdAsync(assetId, ct)).ReturnsAsync((Asset?)null);
+
+        var sut = CreateSut();
+
+        // act
+        Func<Task> act = () => sut.CompleteMaintenanceAsync(assetId, ct);
+
+        // assert
+        await act.Should().ThrowAsync<AssetNotFoundException>();
+
+        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _assetRepo.VerifyAll();
+    }
+
+    [Fact]
+    public async Task CompleteMaintenanceAsync_when_asset_not_in_maintenance_should_throw_validation_and_not_save()
+    {
+        // arrange
+        var ct = CancellationToken.None;
+        var assetId = 1L;
+
+        var asset = AssetFactory.NewAvailable(
+            name: "Mouse",
+            serial: "S",
+            typeId: 1L,
+            value: 1m);
+
+        _assetRepo.Setup(r => r.GetByIdAsync(assetId, ct)).ReturnsAsync(asset);
+
+        var sut = CreateSut();
+
+        // act
+        Func<Task> act = () => sut.CompleteMaintenanceAsync(assetId, ct);
+
+        // assert
+        await act.Should().ThrowAsync<AssetMaintenanceReturnValidationException>();
+
+        _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+        asset.Status.Should().Be(AssetStatus.Available);
+        _assetRepo.VerifyAll();
+    }
+
+    [Fact]
+    public async Task CompleteMaintenanceAsync_when_in_maintenance_should_set_available_clear_assignment_and_save()
+    {
+        // arrange
+        var ct = CancellationToken.None;
+        var assetId = 1L;
+
+        var asset = AssetFactory.NewAvailable(
+            name: "Mouse",
+            serial: "S",
+            typeId: 1L,
+            value: 1m);
+
+        asset.MarkMaintenance();
+        asset.Status.Should().Be(AssetStatus.Maintenance);
+
+        _assetRepo.Setup(r => r.GetByIdAsync(assetId, ct))
+                  .ReturnsAsync(asset);
+
+        _uow.Setup(u => u.SaveChangesAsync(ct))
+            .Returns(Task.CompletedTask);
+
+        var sut = CreateSut();
+
+        // act
+        await sut.CompleteMaintenanceAsync(assetId, ct);
+
+        // assert
+        asset.Status.Should().Be(AssetStatus.Available);
+        asset.AssignedToUserId.Should().BeNull();
+        asset.AssignedAtUtc.Should().BeNull();
+
+        _assetRepo.VerifyAll();
+        _uow.VerifyAll();
+    }
+
+    [Fact]
     public async Task GetHistoryAsync_should_map_logs()
     {
         // arrange
