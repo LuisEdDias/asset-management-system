@@ -180,4 +180,10 @@
   <data name="Asset.MaintenanceReturnInvalid" xml:space="preserve">
     <value>Only items undergoing maintenance can be returned.</value>
   </data>
+  <data name="Validation.SerialNumber" xml:space="preserve">
+    <value>The serial number should contain only numbers and letters (case sensitive).</value>
+  </data>
+  <data name="Validation.Name" xml:space="preserve">
+    <value> 49 The name should contain only letters and single spaces.</value>
+  </data>
 </root>

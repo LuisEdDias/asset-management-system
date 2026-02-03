@@ -1,7 +1,7 @@
-using AssetManagement.Application.Users.Dtos;
+using AssetManagement.Shared.Users.Dtos;
 using FluentValidation;
 
-namespace AssetManagement.Application.Users.Validators;
+namespace AssetManagement.Shared.Users.Validators;
 
 public sealed class UpdateUserRequestValidator : AbstractValidator<UpdateUserRequest>
 {
@@ -11,7 +11,11 @@ public sealed class UpdateUserRequestValidator : AbstractValidator<UpdateUserReq
             .NotEmpty()
             .WithMessage("Validation.FieldRequired")
             .MaximumLength(120)
-            .WithMessage("Validation.FieldMaxLength");
+            .WithMessage("Validation.FieldMaxLength")
+            .Matches(@"^[a-zA-ZÀ-ÿ ]+$")
+            .WithMessage("Validation.Name")
+            .Must(name => !name.Contains("  "))
+            .WithMessage("Validation.Name");
 
         RuleFor(x => x.Email)
             .NotEmpty()

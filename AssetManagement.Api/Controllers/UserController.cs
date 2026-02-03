@@ -1,5 +1,5 @@
 using AssetManagement.Application.Users;
-using AssetManagement.Application.Users.Dtos;
+using AssetManagement.Shared.Users.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AssetManagement.Api.Controllers;

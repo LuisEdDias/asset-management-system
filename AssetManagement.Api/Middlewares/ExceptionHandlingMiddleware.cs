@@ -28,8 +28,6 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next)
         IStringLocalizer<SharedMessages> messageLocalizer,
         CancellationToken ct)
     {
-        Console.WriteLine(ex.GetType().FullName);
-
         if (ex is ValidationException validationException)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -64,6 +62,7 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next)
                 AssetNotAvailableException => StatusCodes.Status409Conflict,
                 AssetReturnInvalidException => StatusCodes.Status409Conflict,
                 AssetTypeInUseException => StatusCodes.Status409Conflict,
+                UserDuplicateEmailException => StatusCodes.Status409Conflict,
 
                 _ => StatusCodes.Status400BadRequest
             };

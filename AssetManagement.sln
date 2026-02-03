@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetManagement.Web", "Asse
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetManagement.Tests", "AssetManagement.Tests\AssetManagement.Tests.csproj", "{CF5D5EAD-A242-49CD-B50D-8B824D22432D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetManagement.Shared", "AssetManagement.Shared\AssetManagement.Shared.csproj", "{8AAAF211-66B2-4B2F-BDF2-9C57862A0D32}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{CF5D5EAD-A242-49CD-B50D-8B824D22432D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF5D5EAD-A242-49CD-B50D-8B824D22432D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF5D5EAD-A242-49CD-B50D-8B824D22432D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AAAF211-66B2-4B2F-BDF2-9C57862A0D32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AAAF211-66B2-4B2F-BDF2-9C57862A0D32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AAAF211-66B2-4B2F-BDF2-9C57862A0D32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AAAF211-66B2-4B2F-BDF2-9C57862A0D32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

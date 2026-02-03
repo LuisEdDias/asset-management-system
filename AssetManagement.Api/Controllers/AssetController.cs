@@ -1,4 +1,4 @@
-using AssetManagement.Application.Assets.Dtos;
+using AssetManagement.Shared.Assets.Dtos;
 using AssetManagement.Application.Assets;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,6 +22,10 @@ public sealed class AssetsController : ControllerBase
     [HttpGet("by-user/{userId:long}")]
     public async Task<ActionResult<List<AssetResponse>>> GetAllByAllocatedUserId(long userId, CancellationToken ct)
         => Ok(await _service.GetAllByAllocatedUserIdAsync(userId, ct));
+
+    [HttpGet("by-serial/{assetSerial}")]
+    public async Task<ActionResult<List<AssetResponse>>> GetByAssetSerial(string assetSerial, CancellationToken ct)
+        => Ok(await _service.GetByAssetSerialAsync(assetSerial, ct));
 
     [HttpGet("{id:long}")]
     public async Task<ActionResult<AssetResponse>> GetById(long id, CancellationToken ct)

@@ -8,7 +8,7 @@ using AssetManagement.Infrastructure.Persistence.Repositories;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using AssetManagement.Application.Users.Validators;
+using AssetManagement.Shared.Assets.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +22,7 @@ builder.Services.AddSwaggerGen();
 
 // Localization
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-builder.Services.AddValidatorsFromAssemblyContaining<CreateUserRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateAssetRequestValidator>();
 
 // Database
 builder.Services.AddDbContext<AppDbContext>(opt =>

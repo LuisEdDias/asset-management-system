@@ -1,6 +1,6 @@
 using AssetManagement.Application.Abstractions.Persistence;
-using AssetManagement.Application.Assets.Dtos;
-using AssetManagement.Application.Users.Dtos;
+using AssetManagement.Shared.Assets.Dtos;
+using AssetManagement.Shared.Users.Dtos;
 using AssetManagement.Application.Exceptions;
 using AssetManagement.Domain.Entities;
 
@@ -78,20 +78,20 @@ public sealed class UserService
     {
         var logs = await _logRepository.GetHistoryAsync(null, id, ct);
 
-        return logs.Select(l => new AssetAllocationLogResponse(
-            l.Id,
-            l.AssetId,
-            l.Asset.Name,
-            l.UserId,
-            l.User.Name,
-            l.Action.ToString(),
-            l.AtUtc
-        )).ToList();
+        return logs.Select(l => new AssetAllocationLogResponse {
+            Id = l.Id,
+            AssetId = l.AssetId,
+            AssetName = l.Asset.Name,
+            UserId = l.UserId,
+            UserName = l.User.Name,
+            Action = l.Action.ToString(),
+            AllocatedAtUtc = l.AtUtc
+        }).ToList();
     }
 
     private static string NormalizeEmail(string email)
         => email.Trim().ToLowerInvariant();
 
     private static UserResponse ToResponse(User u)
-        => new(u.Id, u.Name, u.Email);
+        => new UserResponse { Id = u.Id, Name = u.Name, Email = u.Email };
 }

@@ -1,7 +1,7 @@
-using AssetManagement.Application.Assets.Dtos;
+using AssetManagement.Shared.Assets.Dtos;
 using FluentValidation;
 
-namespace AssetManagement.Application.Assets.Validators;
+namespace AssetManagement.Shared.Assets.Validators;
 
 public sealed class UpdateAssetRequestValidator : AbstractValidator<UpdateAssetRequest>
 {

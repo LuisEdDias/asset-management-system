@@ -1,7 +1,7 @@
-using AssetManagement.Application.Assets.Dtos;
+using AssetManagement.Shared.Assets.Dtos;
 using FluentValidation;
 
-namespace AssetManagement.Application.Assets.Validators;
+namespace AssetManagement.Shared.Assets.Validators;
 
 public sealed class CreateAssetRequestValidator : AbstractValidator<CreateAssetRequest>
 {
@@ -17,7 +17,9 @@ public sealed class CreateAssetRequestValidator : AbstractValidator<CreateAssetR
             .NotEmpty()
             .WithMessage("Validation.FieldRequired")
             .MaximumLength(100)
-            .WithMessage("Validation.FieldMaxLength");
+            .WithMessage("Validation.FieldMaxLength")
+            .Matches(@"^[a-zA-Z0-9]*$")
+            .WithMessage("Validation.SerialNumber");
 
         RuleFor(x => x.AssetTypeId)
             .GreaterThan(0)

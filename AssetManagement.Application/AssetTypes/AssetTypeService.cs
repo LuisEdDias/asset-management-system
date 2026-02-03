@@ -1,5 +1,5 @@
 using AssetManagement.Application.Abstractions.Persistence;
-using AssetManagement.Application.AssetTypes.Dtos;
+using AssetManagement.Shared.AssetTypes.Dtos;
 using AssetManagement.Application.Exceptions;
 using AssetManagement.Domain.Entities;
 
@@ -21,7 +21,7 @@ public sealed class AssetTypeService
         var types = await _assetTypeRepository.GetAllAsyncNoTracking(ct);
 
         return types
-            .Select(x => new AssetTypeResponse(x.Id, x.Name))
+            .Select(x => new AssetTypeResponse { Id = x.Id, Name = x.Name })
             .ToList();
     }
 
@@ -29,7 +29,7 @@ public sealed class AssetTypeService
     {
         var type = await _assetTypeRepository.GetByIdAsync(id, ct) ?? throw new EntityNotFoundException(id);
 
-        return new AssetTypeResponse(type.Id, type.Name);
+        return new AssetTypeResponse { Id = type.Id, Name = type.Name };
     }
 
     public async Task<AssetTypeResponse> CreateAsync(CreateAssetTypeRequest request, CancellationToken ct)
@@ -47,7 +47,7 @@ public sealed class AssetTypeService
 
         await _unitOfWork.SaveChangesAsync(ct);
 
-        return new AssetTypeResponse(entity.Id, entity.Name);
+        return new AssetTypeResponse { Id = entity.Id, Name = entity.Name };
     }
 
     public async Task<AssetTypeResponse> UpdateAsync(long id, UpdateAssetTypeRequest request, CancellationToken ct)
@@ -68,7 +68,7 @@ public sealed class AssetTypeService
 
         await _unitOfWork.SaveChangesAsync(ct);
 
-        return new AssetTypeResponse(entity.Id, entity.Name);
+        return new AssetTypeResponse { Id = entity.Id, Name = entity.Name };
     }
 
     public async Task DeleteAsync(long id, CancellationToken ct)

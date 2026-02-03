@@ -1,4 +1,4 @@
-using AssetManagement.Application.AssetTypes.Dtos;
+using AssetManagement.Shared.AssetTypes.Dtos;
 using AssetManagement.Application.AssetTypes;
 using Microsoft.AspNetCore.Mvc;
 

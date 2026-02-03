@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AssetManagement.Application\AssetManagement.Application.csproj" />
     <ProjectReference Include="..\AssetManagement.Infrastructure\AssetManagement.Infrastructure.csproj" />
+    <ProjectReference Include="..\AssetManagement.Shared\AssetManagement.Shared.csproj" />
   </ItemGroup>
 
 </Project>

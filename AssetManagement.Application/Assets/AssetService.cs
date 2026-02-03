@@ -1,8 +1,9 @@
 using AssetManagement.Application.Abstractions.Persistence;
-using AssetManagement.Application.Assets.Dtos;
+using AssetManagement.Shared.Assets.Dtos;
 using AssetManagement.Application.Exceptions;
 using AssetManagement.Domain.Entities;
 using AssetManagement.Domain.Enums;
+using System.Data.Common;
 
 namespace AssetManagement.Application.Assets;
 
@@ -30,16 +31,24 @@ public sealed class AssetService
 
     public async Task<List<AssetResponse>> GetAllAsync(CancellationToken ct)
     {
-        var items = await _assetRepository.GetAllAsyncNoTracking(ct);
+        var assets = await _assetRepository.GetAllAsyncNoTracking(ct);
 
-        return items.Select(ToResponse).ToList();
+        return assets.Select(ToResponse).ToList();
     }
 
     public async Task<List<AssetResponse>> GetAllByAllocatedUserIdAsync(long userId, CancellationToken ct)
     {
-        var items = await _assetRepository.GetAllByAllocatedUserIdAsync(userId, ct);
+        var asset = await _assetRepository.GetAllByAllocatedUserIdAsync(userId, ct);
 
-        return items.Select(ToResponse).ToList();
+        return asset.Select(ToResponse).ToList();
+    }
+
+    public async Task<AssetResponse> GetByAssetSerialAsync(string assetSerial, CancellationToken ct)
+    {
+        var asset = await _assetRepository.GetBySerialAsync(NormalizeSerial(assetSerial), ct) 
+            ?? throw new AssetNotFoundException(0L);
+
+        return ToResponse(asset);
     }
 
     public async Task<AssetResponse> GetByIdAsync(long id, CancellationToken ct)
@@ -160,28 +169,31 @@ public sealed class AssetService
     {
         var logs = await _logRepository.GetHistoryAsync(assetId, userId, ct);
 
-        return logs.Select(l => new AssetAllocationLogResponse(
-            l.Id,
-            l.AssetId,
-            l.Asset.Name,
-            l.UserId,
-            l.User.Name,
-            l.Action.ToString(),
-            l.AtUtc
-        )).ToList();
+        return logs.Select(l => new AssetAllocationLogResponse
+    {
+        Id = l.Id,
+        AssetId = l.AssetId,
+        AssetName = l.Asset.Name,
+        UserId = l.UserId,
+        UserName = l.User.Name,
+        Action = l.Action.ToString(),
+        AllocatedAtUtc = l.AtUtc
+    }).ToList();
     }
 
-    private static AssetResponse ToResponse(Asset a) => new(
-        a.Id,
-        a.Name,
-        a.SerialNumber,
-        a.AssetTypeId,
-        a.Type?.Name,
-        a.Status.ToString(),
-        a.Value,
-        a.AssignedToUserId,
-        a.AssignedAtUtc
-    );
+    private static AssetResponse ToResponse(Asset a) => new AssetResponse
+{
+    Id = a.Id,
+    Name = a.Name,
+    SerialNumber = a.SerialNumber,
+    AssetTypeId = a.AssetTypeId,
+    AssetTypeName = a.Type?.Name,
+    Status = a.Status.ToString(),
+    Value = a.Value,
+    AssignedToUserId = a.AssignedToUserId,
+    AssignedToUserName = a.AssignedToUser?.Name,
+    AssignedAt = a.AssignedAtUtc
+};
 
     private static string NormalizeSerial(string serial)
         => serial.Trim();
