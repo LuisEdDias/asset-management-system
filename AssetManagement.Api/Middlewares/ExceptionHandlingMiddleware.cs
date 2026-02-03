@@ -57,7 +57,11 @@ public sealed class ExceptionHandlingMiddleware(RequestDelegate next)
             var status = appEx switch
             {
                 EntityNotFoundException => StatusCodes.Status404NotFound,
+                AssetNotFoundException => StatusCodes.Status404NotFound,
+                AssetTypeNotFoundException => StatusCodes.Status404NotFound,
+                UserNotFoundException => StatusCodes.Status404NotFound,
                 AssetTypeDuplicateNameException => StatusCodes.Status409Conflict,
+                AssetDuplicateSerialException => StatusCodes.Status409Conflict,
                 AllocationConflictException => StatusCodes.Status409Conflict,
                 AssetNotAvailableException => StatusCodes.Status409Conflict,
                 AssetReturnInvalidException => StatusCodes.Status409Conflict,
