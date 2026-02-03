@@ -1,7 +1,7 @@
 @page "/history"
 @inject AssetsApi AssetsApi
 
-<div class="top-row d-flex justify-content-between px-0">
+<div class="top-row d-flex justify-content-between px-0 pt-4">
     <h2>Histórico de alocações</h2>
 </div>
 
@@ -12,7 +12,7 @@
 {
     @if (_history.Count == 0)
     {
-        <div class="text-muted text-center fs-4">Sem registros.</div>
+        <div class="text-muted fs-4">Sem registros.</div>
     }
     else
     {
