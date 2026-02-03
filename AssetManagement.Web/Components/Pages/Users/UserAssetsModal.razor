@@ -1,0 +1,75 @@
+@using AssetManagement.Shared.Assets.Dtos
+@using AssetManagement.Shared.Users.Dtos
+@inject AssetsApi AssetsApi
+
+<div class="modal @(_isVisible ? "d-block" : "d-none")" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Itens alocados para @_userName</h5>
+                <button type="button" class="btn-close" @onclick="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (_loading)
+                {
+                    <p>Carregando...</p>
+                }
+                else
+                {
+                    @if (_assets.Count == 0)
+                    {
+                        <div class="text-muted text-center fs-4">Sem registros.</div>
+                    }
+                    else
+                    {
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Serial</th>
+                                    <th>Tipo</th>
+                                    <th class="text-end"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (AssetResponse a in _assets)
+                                {
+                                    <tr>
+                                        <td>@a.Name</td>
+                                        <td>@a.SerialNumber</td>
+                                        <td>@a.AssetTypeName</td>
+                                        <td class="text-end">
+                                            <a class="btn btn-sm btn-primary"
+                                                href="@(value: $"/assets/{a.Id}")">Detalhes</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _isVisible;
+    private bool _loading;
+    private string _userName = "";
+    private List<AssetResponse> _assets = new List<AssetResponse>();
+
+    public async Task Show(UserResponse user)
+    {
+        _isVisible = true;
+        _userName = user.Name;
+        _loading = true;
+        StateHasChanged();
+
+        _assets = await AssetsApi.GetByUserAsync(user.Id, CancellationToken.None);
+        _loading = false;
+        StateHasChanged();
+    }
+
+    private void Close() => _isVisible = false;
+}

@@ -1,6 +1,10 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">AssetManagement.Web</a>
+﻿<div class="top-row navbar navbar-dark">
+    <div class="brand">
+        <div class="brand-mark">AM</div>
+        <div class="brand-text">
+            <div class="brand-name">AssetManager</div>
+            <div class="brand-subtitle">Gestão de ativos</div>
+        </div>
     </div>
 </div>
 
@@ -9,22 +13,31 @@
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            <NavLink class="nav-link" href="/assets" Match="NavLinkMatch.All">
+                <span class="bi bi-pc-display-fill-nav-menu" aria-hidden="true"></span>
+                <span class="nav-label">Itens</span>
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+            <NavLink class="nav-link" href="/users">
+                <span class="bi bi-people-nav-menu" aria-hidden="true"></span>
+                <span class="nav-label">Usuários</span>
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+            <NavLink class="nav-link" href="/asset-types">
+                <span class="bi bi-tags-nav-menu" aria-hidden="true"></span>
+                <span class="nav-label">Categorias</span>
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/history">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span>
+                <span class="nav-label">Histórico</span>
             </NavLink>
         </div>
     </nav>
 </div>
-

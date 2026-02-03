@@ -1,0 +1,128 @@
+@inject ApiClient ApiClient
+@inject UsersApi UsersApi
+
+<div class="modal @(_isVisible ? "d-block" : "d-none")" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <ErrorBanner Message="@_error" OnClose="ClearError" />
+            <div class="modal-header">
+                <h5 class="modal-title">@(_isEdit ? "Editar Dados" : "Novo Usuário")</h5>
+                <button type="button" class="btn-close" @onclick="Close"></button>
+            </div>
+            @if (_isVisible && _editContext != null)
+            {
+                <EditForm EditContext="_editContext" OnValidSubmit="HandleSave">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nome</label>
+                            <InputText @bind-Value="_model.Name" class="form-control" />
+                            <ValidationMessage For="@(() => _model.Name)" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <InputText @bind-Value="_model.Email" class="form-control" />
+                            <ValidationMessage For="@(() => _model.Email)" />
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="Close">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    private string? _error;
+    private UpdateUserRequest _model = new UpdateUserRequest();
+    private EditContext? _editContext;
+    private ValidationMessageStore? _messageStore;
+    private bool _isVisible;
+    private bool _isEdit;
+    private long? _editingUserId;
+
+    protected override void OnInitialized()
+    {
+        PrepareContext(model: new UpdateUserRequest());
+    }
+
+    private void ClearError()
+    {
+        _error = null;
+    }
+
+    public void Show(UserResponse? user = null)
+    {
+        _isEdit = user != null;
+        _editingUserId = user?.Id;
+
+        UpdateUserRequest? targetModel = _isEdit
+        ? new UpdateUserRequest { Name = user!.Name, Email = user!.Email }
+        : new UpdateUserRequest();
+
+        PrepareContext(targetModel);
+
+        _isVisible = true;
+        StateHasChanged();
+    }
+
+    private void PrepareContext(UpdateUserRequest model)
+    {
+        _model = model;
+        _editContext = new EditContext(_model);
+        _messageStore = new ValidationMessageStore(_editContext);
+
+        _editContext.OnFieldChanged += (object? s, FieldChangedEventArgs e) =>
+        {
+            _messageStore.Clear(e.FieldIdentifier);
+            _editContext.NotifyValidationStateChanged();
+        };
+    }
+
+    private void Close() => _isVisible = false;
+
+    private async Task HandleSave()
+    {
+        if (_editContext == null || _messageStore == null) return;
+
+        _messageStore.Clear();
+
+        try
+        {
+            if (_isEdit)
+                await UsersApi.UpdateAsync(_editingUserId!.Value, _model, CancellationToken.None);
+            else
+                await UsersApi.CreateAsync(new CreateUserRequest { Name = _model.Name, Email = _model.Email }, CancellationToken.None);
+
+            await OnSave.InvokeAsync();
+            Close();
+        }
+        catch (ApiException ex) when (ex.StatusCode == 400)
+        {
+            if (ex.ValidationErrors.Any())
+            {
+                foreach (KeyValuePair<string, string[]> error in ex.ValidationErrors)
+                {
+                    FieldIdentifier fieldIdentifier = new FieldIdentifier(_model, error.Key);
+                    _messageStore.Add(fieldIdentifier, error.Value);
+                }
+            }
+            else
+            {
+                _error = ex.Detail ?? ex.Message;
+            }
+
+            _editContext.NotifyValidationStateChanged();
+        }
+        catch (Exception ex)
+        {
+            _error = "Ocorreu um erro inesperado no servidor.";
+            Console.WriteLine(value: $"Erro inesperado: {ex.Message}");
+        }
+    }
+}

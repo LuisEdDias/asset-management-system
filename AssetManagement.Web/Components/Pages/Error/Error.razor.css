@@ -1,0 +1,61 @@
+.error-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    padding: 1.5rem;
+}
+
+.error-card {
+    max-width: 500px;
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.05);
+    padding: 3rem 2rem;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.error-card:hover {
+    transform: translateY(-5px);
+}
+
+.error-code {
+    font-size: 5rem;
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(45deg, #b32121, #ff5f5f);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1.5rem;
+    letter-spacing: -2px;
+}
+
+.error-card h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 1rem;
+}
+
+.error-card p {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+}
+
+.error-actions .btn-primary {
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(179, 33, 33, 0.2);
+}
+
+.error-actions .btn-primary:hover {
+    box-shadow: 0 6px 12px rgba(179, 33, 33, 0.3);
+    transform: scale(1.02);
+}

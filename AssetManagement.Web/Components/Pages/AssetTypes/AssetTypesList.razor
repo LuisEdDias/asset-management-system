@@ -1,0 +1,132 @@
+@rendermode InteractiveServer
+@page "/asset-types"
+@inject AssetTypesApi AssetTypesApi
+
+<div class="top-row d-flex justify-content-between px-0 pt-4">
+    <h2>Categorias</h2>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <button class="btn btn-primary" @onclick="() => OpenCreateModal()">Nova categoria</button>
+    </div>
+</div>
+
+<ErrorBanner Message="@_error" />
+<LoadingOverlay Loading="@_loading" />
+
+@if (!_loading)
+{
+    @if (_assetTypes.Count == 0)
+    {
+        <div class="text-muted text-center fs-4">Sem registros.</div>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th class="text-end"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (AssetTypeResponse assetType in _assetTypes)
+                {
+                    <tr>
+                        <td>@assetType.Name</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-primary me-2" @onclick="() => OpenEditModal(assetType)">Editar</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => OpenDeleteModal(assetType)">Excluir</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+<AssetTypeFormModal @ref="_assetTypeFormModal" OnSave="LoadAsync" />
+
+<ConfirmModal Visible="_showDeleteModal" Title="Excluir categoria" ConfirmText="Excluir"
+    ConfirmButtonClass="btn-danger" Busy="_busy" Error="@_modalError"
+    OnCancel="CloseDeleteModal" OnConfirm="ConfirmDeleteAsync">
+
+    <p class="text-center">
+        Confirma a exclusão da categoria
+        <strong>@_deletingAssetType?.Name</strong>?
+    </p>
+
+</ConfirmModal>
+
+@code {
+    private bool _loading = true;
+    private bool _busy;
+    private string? _error;
+    private string? _modalError;
+    private List<AssetTypeResponse> _assetTypes = new List<AssetTypeResponse>();
+    private AssetTypeFormModal _assetTypeFormModal = default!;
+    private bool _showDeleteModal;
+    private AssetTypeResponse? _deletingAssetType;
+
+    protected override async Task OnInitializedAsync()
+        => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        _loading = true;
+
+        try
+        {
+            _assetTypes = await AssetTypesApi.GetAllAsync(CancellationToken.None);
+        }
+        catch (ApiException ex)
+        {
+            _error = ex.Detail ?? ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OpenCreateModal() => _assetTypeFormModal.Show();
+    private async Task OpenEditModal(AssetTypeResponse assetType) => _assetTypeFormModal.Show(assetType);
+
+    private void OpenDeleteModal(AssetTypeResponse assetType)
+    {
+        _modalError = null;
+        _deletingAssetType = assetType;
+        _showDeleteModal = true;
+    }
+
+    private void CloseDeleteModal()
+    {
+        _modalError = null;
+        _showDeleteModal = false;
+        _deletingAssetType = null;
+    }
+
+    private async Task ConfirmDeleteAsync()
+    {
+        if (_deletingAssetType == null) return;
+
+        _modalError = null;
+        _error = null;
+        _busy = true;
+
+        try
+        {
+            await AssetTypesApi.DeleteAsync(_deletingAssetType.Id, CancellationToken.None);
+            CloseDeleteModal();
+            await LoadAsync();
+        }
+        catch (ApiException ex)
+        {
+            _modalError = ex.Detail ?? ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

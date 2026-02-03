@@ -1,0 +1,330 @@
+@rendermode InteractiveServer
+@page "/assets/{Id:long}"
+
+@inject NavigationManager NavigationManager
+@inject AssetsApi AssetsApi
+@inject UsersApi UsersApi
+
+<div class="top-row d-flex justify-content-between px-0">
+    <h2>Detalhes do Item</h2>
+
+    <div class="d-flex justify-content-between align-items-center mb-3 gap-4">
+        <div class="d-flex align-items-center gap-2">
+            <input class="form-control" style="max-width: 260px;" placeholder="Buscar item por serial..."
+                @bind="_serialQuery" @bind:event="oninput" @onkeydown="HandleSerialKeyDown" disabled="@_searching" />
+
+            <button class="btn btn-primary" @onclick="@(() => SearchBySerialAsync())"
+                disabled="@(_searching || string.IsNullOrWhiteSpace(_serialQuery))">
+                @(_searching ? "Buscando..." : "Buscar")
+            </button>
+        </div>
+    </div>
+</div>
+
+<ErrorBanner Message="@_error" />
+<LoadingOverlay Loading="@_loading" />
+
+@if (!_loading && _asset is not null)
+{
+    <div class="card p-3 mb-3">
+        <div class="container d-flex">
+            <div class="col-4">
+                <div><strong>@_asset.Name</strong></div>
+                <div>Serial: @_asset.SerialNumber</div>
+                <div>Tipo: @_asset.AssetTypeName</div>
+                <div>Status: @AssetStatusTranslate.ToPtBr(@_asset.Status)</div>
+                <div>Alocado para: @(_asset.AssignedToUserName?.ToString() ?? "-")</div>
+                <div>Alocado em: @(_asset.AssignedAt?.LocalDateTime.ToString(format: "dd/MM/yyyy HH:mm") ?? "-")</div>
+            </div>
+            <div class="d-flex col align-items-end justify-content-end gap-3">
+                <button class="btn btn-primary col-3" @onclick="() => OpenEditModal(_asset)">
+                    Editar
+                </button>
+
+                @if (_asset.Status == "InUse")
+                {
+                    <button class="btn btn-success col-3" @onclick="() => _showReturnModal = true">
+                        Devolver
+                    </button>
+                }
+
+                @if (_asset.Status == "Available")
+                {
+                    <button class="btn btn-success col-3" @onclick="() => _showAllocateModal = true">
+                        Alocar
+                    </button>
+
+                    <button class="btn btn-secondary col-4" @onclick="() => _showMarkMaintenanceModal = true">
+                        Colocar em manutenção
+                    </button>
+                }
+
+                @if (_asset.Status == "Maintenance")
+                {
+                    <button class="btn btn-success col-4" @onclick="() => _showCompleteMaintenanceModal = true"
+                        disabled="@_busy">
+                        Concluir manutenção
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-3">
+        <h5>Histórico</h5>
+        @if (_history.Count == 0)
+        {
+            <div class="text-muted">Sem registros.</div>
+        }
+        else
+        {
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Ação</th>
+                        <th>Usuário</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (AssetAllocationLogResponse h in _history)
+                    {
+                        <tr>
+                            <td>@AllocationActionTranslate.ToPtBr(@h.Action!)</td>
+                            <td>@h.UserName</td>
+                            <td>@h.AllocatedAtUtc.LocalDateTime.ToString(format: "dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <AssetFormModal @ref="_assetFormModal" OnSave="LoadAsync" />
+
+    <AllocateAssetModal Visible="_showAllocateModal" Busy="_busy" AssetName="@(@_asset?.Name ?? "-")"
+        SerialNumber="@(@_asset?.SerialNumber ?? "-")" Users="_users" @bind-SelectedUserId="_selectedUserId"
+        OnCancel="CloseModal" OnConfirm="ConfirmAllocateAsync" />
+
+    <ConfirmModal Visible="_showReturnModal" Title="Devolver item" ConfirmText="Confirmar devolução"
+        ConfirmButtonClass="btn-primary" Busy="_busy" OnCancel="CloseModal" OnConfirm="ConfirmReturnAsync">
+
+        <p class="text-center">
+            Confirma a devolução do item
+            <strong>@_asset?.Name</strong>?
+        </p>
+
+        <div class="text-muted small">
+            Alocado para: @_asset?.AssignedToUserName
+        </div>
+
+    </ConfirmModal>
+
+    <ConfirmModal Visible="_showMarkMaintenanceModal" Title="Enviar para manutenção" ConfirmText="Confirmar envio"
+        ConfirmButtonClass="btn-primary" Busy="_busy" OnCancel="CloseModal" OnConfirm="MarkMaintenanceAsync">
+
+        <p class="text-center">
+            Confirma o envio do item para manutenção
+            <strong>@_asset?.Name</strong>?
+        </p>
+
+    </ConfirmModal>
+
+    <ConfirmModal Visible="_showCompleteMaintenanceModal" Title="Retorno de manutenção" ConfirmText="Confirmar retorno"
+        ConfirmButtonClass="btn-primary" Busy="_busy" OnCancel="CloseModal" OnConfirm="CompleteMaintenanceAsync">
+
+        <p class="text-center">
+            Confirma o retorno do item
+            <strong>@_asset?.Name</strong>?
+        </p>
+
+    </ConfirmModal>
+}
+
+@code {
+    [Parameter] public long Id { get; set; }
+
+    private bool _loading = true;
+    private bool _busy;
+    private string? _error;
+
+    private bool _searching = false;
+    private string? _serialQuery;
+
+    private AssetFormModal _assetFormModal = default!;
+    private bool _showAllocateModal;
+    private bool _showReturnModal;
+    private bool _showMarkMaintenanceModal;
+    private bool _showCompleteMaintenanceModal;
+    private string? _modalError = null;
+
+    private AssetResponse? _asset;
+    private List<UserResponse> _users = new List<UserResponse>();
+    private long _selectedUserId;
+
+    private List<AssetAllocationLogResponse> _history = new List<AssetAllocationLogResponse>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        _loading = true;
+
+        try
+        {
+            _asset = await AssetsApi.GetByIdAsync(Id, CancellationToken.None);
+            _users = await UsersApi.GetAllAsync(CancellationToken.None);
+            _history = await AssetsApi.GetHistoryByAssetAsync(Id, CancellationToken.None);
+
+            if (_asset.AssignedToUserId is long uid)
+                _selectedUserId = uid;
+        }
+        catch (ApiException ex)
+        {
+            _error = ex.Detail ?? ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void CloseModal()
+    {
+        _modalError = null;
+        _showAllocateModal = false;
+        _showReturnModal = false;
+        _showMarkMaintenanceModal = false;
+        _showCompleteMaintenanceModal = false;
+    }
+
+    private async Task OpenEditModal(AssetResponse assetResponse) => _assetFormModal.Show(assetResponse);
+
+    private async Task MarkMaintenanceAsync()
+    {
+        _error = null;
+        _busy = true;
+
+        try
+        {
+            CloseModal();
+            await AssetsApi.MarkMaintenanceAsync(Id, CancellationToken.None);
+            await LoadAsync();
+        }
+        catch (ApiException ex)
+        {
+            _error = ex.Detail ?? ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task CompleteMaintenanceAsync()
+    {
+        _error = null;
+        _busy = true;
+
+        try
+        {
+            CloseModal();
+            await AssetsApi.CompleteMaintenanceAsync(Id, CancellationToken.None);
+            await LoadAsync();
+        }
+        catch (ApiException ex)
+        {
+            _error = ex.Detail ?? ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ConfirmAllocateAsync()
+    {
+        _modalError = null;
+        _error = null;
+        _busy = true;
+        try
+        {
+            await AssetsApi.AllocateAsync(Id, _selectedUserId, CancellationToken.None);
+            CloseModal();
+            await LoadAsync();
+        }
+        catch (ApiException ex)
+        {
+            _modalError = ex.Detail ?? ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ConfirmReturnAsync()
+    {
+        _modalError = null;
+        _error = null;
+        _busy = true;
+
+        try
+        {
+            await AssetsApi.ReturnAsync(Id, CancellationToken.None);
+            CloseModal();
+            await LoadAsync();
+        }
+        catch (ApiException ex)
+        {
+            _modalError = ex.Detail ?? ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task SearchBySerialAsync()
+    {
+        _error = null;
+
+        string? serial = (_serialQuery ?? "").Trim();
+        if (string.IsNullOrWhiteSpace(serial))
+            return;
+
+        _searching = true;
+
+        try
+        {
+            AssetResponse? asset = await AssetsApi.GetByAssetSerialAsync(serial, CancellationToken.None);
+
+            NavigationManager.NavigateTo(uri: $"/assets/{asset.Id}");
+        }
+        catch (ApiException ex)
+        {
+            if (ex.StatusCode == 404)
+            {
+                _error = ex.Detail ?? ex.Message;
+            }
+            else
+            {
+                _error = ex.Detail ?? ex.Message;
+            }
+        }
+        finally
+        {
+            _searching = false;
+        }
+    }
+
+    private async Task HandleSerialKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await SearchBySerialAsync();
+    }
+}

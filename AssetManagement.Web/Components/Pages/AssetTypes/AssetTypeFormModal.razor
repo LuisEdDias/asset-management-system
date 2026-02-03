@@ -1,0 +1,122 @@
+@inject AssetTypesApi AssetTypesApi
+
+<div class="modal @(_isVisible ? "d-block" : "d-none")" tabindex="-1" style="background: rgba(0,0,0,0.5)">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <ErrorBanner Message="@_error" OnClose="ClearError" />
+            <div class="modal-header">
+                <h5 class="modal-title">@(_isEdit ? "Editar Categoria" : "Nova Categoria")</h5>
+                <button type="button" class="btn-close" @onclick="Close"></button>
+            </div>
+            @if (_isVisible && _editContext != null)
+            {
+                <EditForm EditContext="_editContext" OnValidSubmit="HandleSave">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nome</label>
+                            <InputText @bind-Value="_model.Name" class="form-control" />
+                            <ValidationMessage For="@(() => _model.Name)" />
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="Close">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    private string? _error;
+    private UpdateAssetTypeRequest _model = new UpdateAssetTypeRequest();
+    private EditContext? _editContext;
+    private ValidationMessageStore? _messageStore;
+    private bool _isVisible;
+    private bool _isEdit;
+    private long? _editingAssetTypeId;
+
+    protected override void OnInitialized()
+    {
+        PrepareContext(model: new UpdateAssetTypeRequest());
+    }
+
+    private void ClearError()
+    {
+        _error = null;
+    }
+
+    public void Show(AssetTypeResponse? assetType = null)
+    {
+        _isEdit = assetType != null;
+        _editingAssetTypeId = assetType?.Id;
+
+        UpdateAssetTypeRequest targetModel = _isEdit
+            ? new UpdateAssetTypeRequest { Name = assetType!.Name }
+            : new UpdateAssetTypeRequest();
+
+        PrepareContext(targetModel);
+
+        _isVisible = true;
+        StateHasChanged();
+    }
+
+    private void PrepareContext(UpdateAssetTypeRequest model)
+    {
+        _model = model;
+        _editContext = new EditContext(_model);
+        _messageStore = new ValidationMessageStore(_editContext);
+
+        _editContext.OnFieldChanged += (object? s, FieldChangedEventArgs e) =>
+        {
+            _messageStore.Clear(e.FieldIdentifier);
+            _editContext.NotifyValidationStateChanged();
+        };
+    }
+
+    private void Close() => _isVisible = false;
+
+    private async Task HandleSave()
+    {
+        if (_editContext == null || _messageStore == null) return;
+
+        _messageStore.Clear();
+
+        try
+        {
+            if (_isEdit)
+                await AssetTypesApi.UpdateAsync(_editingAssetTypeId!.Value, _model, CancellationToken.None);
+            else
+                await AssetTypesApi.CreateAsync(req: new CreateAssetTypeRequest { Name = _model.Name }, CancellationToken.None);
+
+            await OnSave.InvokeAsync();
+            Close();
+        }
+        catch (ApiException ex) when (ex.StatusCode == 400)
+        {
+            if (ex.ValidationErrors.Any())
+            {
+                foreach (KeyValuePair<string, string[]> error in ex.ValidationErrors)
+                {
+                    FieldIdentifier fieldIdentifier = new FieldIdentifier(_model, error.Key);
+                    _messageStore.Add(fieldIdentifier, error.Value);
+                }
+            }
+            else
+            {
+                _error = ex.Message ?? ex.Detail;
+            }
+
+            _editContext.NotifyValidationStateChanged();
+        }
+        catch (Exception ex)
+        {
+            _error = "Ocorreu um erro inesperado no servidor.";
+            Console.WriteLine(value: $"Erro inesperado: {ex.Message}");
+        }
+    }
+}

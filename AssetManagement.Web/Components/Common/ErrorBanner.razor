@@ -1,0 +1,17 @@
+@if (!string.IsNullOrWhiteSpace(Message))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @Message
+
+        <button type="button"
+                class="btn-close"
+                aria-label="Close"
+                @onclick="OnClose">
+        </button>
+    </div>
+}
+
+@code {
+    [Parameter] public string? Message { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+}

@@ -1,0 +1,143 @@
+@rendermode InteractiveServer
+@page "/assets"
+@inject AssetsApi AssetsApi
+@inject NavigationManager NavigationManager
+
+<div class="top-row d-flex justify-content-between px-0">
+    <h2>Itens</h2>
+
+    <div class="d-flex justify-content-between align-items-center mb-3 gap-4">
+        <a class="btn btn-primary" @onclick="() => OpenCreateModal()">Novo item</a>
+
+        <div class="d-flex align-items-center gap-2">
+            <input class="form-control" style="max-width: 260px;" placeholder="Buscar por serial..."
+                @bind="_serialQuery" @bind:event="oninput" @onkeydown="HandleSerialKeyDown" disabled="@_searching" />
+
+            <button class="btn btn-primary" @onclick="@(() => SearchBySerialAsync())"
+                disabled="@(_searching || string.IsNullOrWhiteSpace(_serialQuery))">
+                @(_searching ? "Buscando..." : "Buscar")
+            </button>
+        </div>
+    </div>
+</div>
+
+<ErrorBanner Message="@_error" OnClose="@ClearError" />
+<LoadingOverlay Loading="@_loading" />
+
+@if (!_loading)
+{
+    @if (_assets.Count == 0)
+    {
+        <div class="text-muted text-center fs-4">Sem registros.</div>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Serial</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th class="text-end"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (AssetResponse asset in _assets)
+                {
+                    <tr>
+                        <td>@asset.Name</td>
+                        <td>@asset.SerialNumber</td>
+                        <td>@asset.AssetTypeName</td>
+                        <td>@AssetStatusTranslate.ToPtBr(asset.Status)</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-dark me-2" href="@(value: $"/assets/{asset.Id}")">Detalhes</a>
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => OpenEditModal(asset)">Editar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+<AssetFormModal @ref="_assetFormModal" OnSave="LoadAsync" />
+
+@code {
+    private bool _loading = true;
+    private bool _searching = false;
+    private string? _error;
+    private string? _serialQuery;
+    private AssetFormModal _assetFormModal = default!;
+
+    private List<AssetResponse> _assets = new List<AssetResponse>();
+
+    protected override async Task OnInitializedAsync()
+    => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        _loading = true;
+
+        try
+        {
+            _assets = await AssetsApi.GetAllAsync(CancellationToken.None);
+        }
+        catch (ApiException ex)
+        {
+            _error = ex.Detail ?? ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void ClearError()
+    {
+        _error = null;
+    }
+
+    private async Task OpenCreateModal() => _assetFormModal.Show();
+    private async Task OpenEditModal(AssetResponse assetResponse) => _assetFormModal.Show(assetResponse);
+
+    private async Task SearchBySerialAsync()
+    {
+        _error = null;
+
+        string? serial = (_serialQuery ?? "").Trim();
+        if (string.IsNullOrWhiteSpace(serial))
+            return;
+
+        _searching = true;
+
+        try
+        {
+            AssetResponse? asset = await AssetsApi.GetByAssetSerialAsync(serial, CancellationToken.None);
+
+            NavigationManager.NavigateTo(uri: $"/assets/{asset.Id}");
+        }
+        catch (ApiException ex)
+        {
+            if (ex.StatusCode == 404)
+            {
+                _error = ex.Detail ?? ex.Message;
+            }
+            else
+            {
+                _error = ex.Detail ?? ex.Message;
+            }
+        }
+        finally
+        {
+            _searching = false;
+        }
+    }
+
+    private async Task HandleSerialKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await SearchBySerialAsync();
+    }
+}

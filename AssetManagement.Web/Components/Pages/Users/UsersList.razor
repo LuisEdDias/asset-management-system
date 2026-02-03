@@ -1,0 +1,84 @@
+@rendermode InteractiveServer
+@page "/users"
+@inject UsersApi UsersApi
+
+<div class="top-row d-flex justify-content-between px-0 pt-4">
+    <h2>Usuários</h2>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <button class="btn btn-primary" @onclick="() => OpenCreateModal()">Novo usuário</button>
+    </div>
+</div>
+
+<ErrorBanner Message="@_error" />
+<LoadingOverlay Loading="@_loading" />
+
+@if (!_loading)
+{
+    @if (_users.Count == 0)
+    {
+        <div class="text-muted text-center fs-4">Sem registros.</div>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th class="text-end"></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (UserResponse user in _users)
+            {
+                <tr>
+                    <td>@user.Name</td>
+                    <td>@user.Email</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary me-2" @onclick="() => OpenEditModal(user)">Editar</button>
+                        <button class="btn btn-sm btn-outline-dark" @onclick="() => OpenAssetsModal(user)">Itens Associados</button>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+}
+
+<UserFormModal @ref="_userFormModal" OnSave="LoadAsync" />
+<UserAssetsModal @ref="_userAssetsModal" />
+
+@code {
+    private bool _loading = true;
+    private string? _error;
+    private List<UserResponse> _users = new List<UserResponse>();
+    private UserFormModal _userFormModal = default!;
+    private UserAssetsModal _userAssetsModal = default!;
+
+    protected override async Task OnInitializedAsync()
+        => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        _loading = true;
+
+        try
+        {
+            _users = await UsersApi.GetAllAsync(CancellationToken.None);
+        }
+        catch (ApiException ex)
+        {
+            _error = ex.Detail ?? ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task OpenCreateModal() => _userFormModal.Show();
+    private async Task OpenEditModal(UserResponse user) => _userFormModal.Show(user);
+    private async Task OpenAssetsModal(UserResponse user) => await _userAssetsModal.Show(user);
+}

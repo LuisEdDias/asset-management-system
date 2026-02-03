@@ -1,0 +1,61 @@
+@using AssetManagement.Shared.Users.Dtos
+@if (Visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" aria-modal="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Alocar item</h5>
+                    <button type="button" class="btn-close" @onclick="OnCancel"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="fw-semibold">@AssetName</div>
+                    <div class="text-muted small mb-3">Serial: @SerialNumber</div>
+
+                    <label class="form-label">Usuário</label>
+                    <select class="form-select" @bind="SelectedUserId" @bind:after="NotifySelectedChanged" disabled="@Busy">
+                        <option value="0">Selecione...</option>
+                        @foreach (UserResponse user in Users)
+                        {
+                            <option value="@user.Id">@user.Name (@user.Email)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="OnCancel" disabled="@Busy">
+                        Cancelar
+                    </button>
+
+                    <button class="btn btn-primary" @onclick="OnConfirm" disabled="@(@Busy || SelectedUserId <= 0)">
+                        Confirmar alocação
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop fade show" @onclick="OnCancel"></div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public string? Error { get; set; }
+
+    [Parameter] public string AssetName { get; set; } = "";
+    [Parameter] public string SerialNumber { get; set; } = "";
+
+    [Parameter] public List<UserResponse> Users { get; set; } = [];
+    [Parameter] public long SelectedUserId { get; set; }
+    [Parameter] public EventCallback<long> SelectedUserIdChanged { get; set; }
+
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private Task NotifySelectedChanged()
+    => SelectedUserIdChanged.InvokeAsync(SelectedUserId);
+}

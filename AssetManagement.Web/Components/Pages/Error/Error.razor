@@ -1,0 +1,30 @@
+@page "/error"
+@page "/error/{StatusCode:int}"
+
+<div class="error-page">
+    <div class="error-card">
+        <div class="error-code">@((StatusCode ?? 500).ToString())</div>
+        <h1>@Title</h1>
+        <p>@Message</p>
+        <div class="error-actions">
+            <a class="btn btn-primary" href="/assets">Voltar para itens</a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int? StatusCode { get; set; }
+
+    private string Title => (StatusCode ?? 500) switch
+    {
+        404 => "Página não encontrada",
+        _ => "Ocorreu um erro inesperado"
+    };
+
+    private string Message => (StatusCode ?? 500) switch
+    {
+        404 => "Não encontramos o endereço solicitado. Verifique o link ou volte para a lista de itens.",
+        _ => "Algo deu errado ao processar sua solicitação. Tente novamente em instantes ou volte para a lista de itens."
+    };
+}

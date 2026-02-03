@@ -1,0 +1,65 @@
+@page "/history"
+@inject AssetsApi AssetsApi
+
+<div class="top-row d-flex justify-content-between px-0">
+    <h2>Histórico de alocações</h2>
+</div>
+
+<ErrorBanner Message="@_error" />
+<LoadingOverlay Loading="@_loading" />
+
+@if (!_loading)
+{
+    @if (_history.Count == 0)
+    {
+        <div class="text-muted text-center fs-4">Sem registros.</div>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Usuário</th>
+                    <th>Ação</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (AssetAllocationLogResponse h in _history)
+            {
+                <tr>
+                    <td>@h.AssetName</td>
+                    <td>@h.UserName</td>
+                    <td>@AllocationActionTranslate.ToPtBr(@h.Action!)</td>
+                    <td>@h.AllocatedAtUtc.LocalDateTime.ToString(format: "dd/MM/yyyy HH:mm")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    private bool _loading = true;
+    private string? _error;
+    private List<AssetAllocationLogResponse> _history = new List<AssetAllocationLogResponse>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _error = null;
+
+        try
+        {
+            _history = await AssetsApi.GetHistoryAsync(CancellationToken.None);
+        }
+        catch (ApiException ex)
+        {
+            _error = ex.Detail ?? ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}
