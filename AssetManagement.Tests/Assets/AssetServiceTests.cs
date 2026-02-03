@@ -2,7 +2,7 @@ using AssetManagement.Domain.Entities;
 using AssetManagement.Domain.Enums;
 using AssetManagement.Application.Assets;
 using AssetManagement.Application.Exceptions;
-using AssetManagement.Application.Assets.Dtos;
+using AssetManagement.Shared.Assets.Dtos;
 using AssetManagement.Application.Abstractions.Persistence;
 using Moq;
 using FluentAssertions;
@@ -158,6 +158,59 @@ public sealed class AssetServiceTests
     }
 
     [Fact]
+    public async Task GetByAssetSerialAsync_when_asset_exists_should_return_response()
+    {
+        // arrange
+        var ct = CancellationToken.None;
+        var serial = "  ABC  ";
+        var normalizedSerial = "ABC";
+        var name = "Monitor";
+        var typeId = 5L;
+        var value = 900m;
+
+        var asset = AssetFactory.NewAvailable(name: name, serial: normalizedSerial, typeId: typeId, value: value);
+
+        _assetRepo.Setup(r => r.GetBySerialAsync(normalizedSerial, ct))
+                  .ReturnsAsync(asset);
+
+        var sut = CreateSut();
+
+        // act
+        var result = await sut.GetByAssetSerialAsync(serial, ct);
+
+        // assert
+        result.Name.Should().Be(name);
+        result.SerialNumber.Should().Be(normalizedSerial);
+        result.AssetTypeId.Should().Be(typeId);
+        result.Value.Should().Be(value);
+        result.Status.Should().Be(AssetStatus.Available.ToString());
+
+        _assetRepo.VerifyAll();
+    }
+
+    [Fact]
+    public async Task GetByAssetSerialAsync_when_asset_missing_should_throw()
+    {
+        // arrange
+        var ct = CancellationToken.None;
+        var serial = "  ABC  ";
+        var normalizedSerial = "ABC";
+
+        _assetRepo.Setup(r => r.GetBySerialAsync(normalizedSerial, ct))
+                  .ReturnsAsync((Asset?)null);
+
+        var sut = CreateSut();
+
+        // act
+        Func<Task> act = () => sut.GetByAssetSerialAsync(serial, ct);
+
+        // assert
+        await act.Should().ThrowAsync<AssetNotFoundException>();
+
+        _assetRepo.VerifyAll();
+    }
+
+    [Fact]
     public async Task CreateAsync_when_request_null_should_throw()
     {
         // arrange
@@ -175,7 +228,13 @@ public sealed class AssetServiceTests
     {
         // arrange
         var ct = CancellationToken.None;
-        var req = new CreateAssetRequest("Mouse", "  ABC  ", 1L, 100m);
+        var req = new CreateAssetRequest
+        {
+            Name = "Mouse",
+            SerialNumber = "  ABC  ",
+            AssetTypeId = 1L,
+            Value = 100m
+        };
 
         _typeRepo.Setup(r => r.ExistsAsync(1L, ct)).ReturnsAsync(false);
 
@@ -201,7 +260,13 @@ public sealed class AssetServiceTests
         var serial = "  ABC  ";
         var typeId = 1L;
         var value = 100m;
-        var req = new CreateAssetRequest(name, serial, typeId, value);
+        var req = new CreateAssetRequest
+        {
+            Name = name,
+            SerialNumber = serial,
+            AssetTypeId = typeId,
+            Value = value
+        };
 
         _typeRepo.Setup(r => r.ExistsAsync(typeId, ct)).ReturnsAsync(true);
 
@@ -241,7 +306,13 @@ public sealed class AssetServiceTests
     {
         // arrange
         var ct = CancellationToken.None;
-        var req = new CreateAssetRequest("Mouse", " ABC ", 1L, 100m);
+        var req = new CreateAssetRequest
+        {
+            Name = "Mouse",
+            SerialNumber = " ABC ",
+            AssetTypeId = 1L,
+            Value = 100m
+        };
 
         _typeRepo.Setup(r => r.ExistsAsync(1L, ct)).ReturnsAsync(true);
         _assetRepo.Setup(r => r.ExistsBySerialAsync("ABC", ct)).ReturnsAsync(true);
@@ -273,7 +344,12 @@ public sealed class AssetServiceTests
     {
         // arrange
         var ct = CancellationToken.None;
-        var req = new UpdateAssetRequest("New", 1L, 999m);
+        var req = new UpdateAssetRequest
+        {
+            Name = "New",
+            AssetTypeId = 1L,
+            Value = 999m
+        };
 
         _assetRepo.Setup(r => r.GetByIdAsync(1, ct)).ReturnsAsync((Asset?)null);
 
@@ -296,7 +372,12 @@ public sealed class AssetServiceTests
         // arrange
         var ct = CancellationToken.None;
         var newTypeId = 10L;
-        var req = new UpdateAssetRequest("New", newTypeId, 999m);
+        var req = new UpdateAssetRequest
+        {
+            Name = "New",
+            AssetTypeId = newTypeId,
+            Value = 999m
+        };
         var existing = AssetFactory.NewAvailable(name: "Old", serial: "S", typeId: 1L, value: 10m);
 
         _assetRepo.Setup(r => r.GetByIdAsync(1, ct)).ReturnsAsync(existing);
@@ -322,7 +403,12 @@ public sealed class AssetServiceTests
         var NewName = "NewName";
         var newTypeId = 10L;
         var newValue = 999m;
-        var req = new UpdateAssetRequest(NewName, newTypeId, newValue);
+        var req = new UpdateAssetRequest
+        {
+            Name = NewName,
+            AssetTypeId = newTypeId,
+            Value = newValue
+        };
         var existing = AssetFactory.NewAvailable(name: "Old", serial: "S", typeId: 1L, value: 10m);
 
         _assetRepo.Setup(r => r.GetByIdAsync(1, ct)).ReturnsAsync(existing);

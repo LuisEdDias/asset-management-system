@@ -2,7 +2,7 @@ using AssetManagement.Domain.Entities;
 using AssetManagement.Application.Exceptions;
 using AssetManagement.Application.Abstractions.Persistence;
 using AssetManagement.Application.AssetTypes;
-using AssetManagement.Application.AssetTypes.Dtos;
+using AssetManagement.Shared.AssetTypes.Dtos;
 using Moq;
 using FluentAssertions;
 
@@ -99,7 +99,10 @@ public sealed class AssetTypeServiceTests
     {
         // arrange
         var ct = CancellationToken.None;
-        var req = new CreateAssetTypeRequest("  periférico  ");
+        var req = new CreateAssetTypeRequest
+        {
+            Name = "  periférico  "
+        };
         var normalized = "PERIFÉRICO";
 
         _repo.Setup(r => r.ExistsByNameAsync(normalized, ct)).ReturnsAsync(true);
@@ -123,7 +126,10 @@ public sealed class AssetTypeServiceTests
     {
         // arrange
         var ct = CancellationToken.None;
-        var req = new CreateAssetTypeRequest("  periférico  ");
+        var req = new CreateAssetTypeRequest
+        {
+            Name = "  periférico  "
+        };
         var normalized = "PERIFÉRICO";
 
         _repo.Setup(r => r.ExistsByNameAsync(normalized, ct)).ReturnsAsync(false);
@@ -166,7 +172,10 @@ public sealed class AssetTypeServiceTests
         // arrange
         var ct = CancellationToken.None;
         var id = 1L;
-        var req = new UpdateAssetTypeRequest("New");
+        var req = new UpdateAssetTypeRequest
+        {
+            Name = "New"
+        };
 
         _repo.Setup(r => r.GetByIdAsync(id, ct)).ReturnsAsync((AssetType?)null);
 
@@ -192,7 +201,10 @@ public sealed class AssetTypeServiceTests
 
         var normalized = "PERIFÉRICO";
         var entity = AssetTypeFactory.New(name: "Periférico");
-        var req = new UpdateAssetTypeRequest("  pErIFéRico  ");
+        var req = new UpdateAssetTypeRequest
+        {
+            Name = "  pErIFéRico  "
+        };
 
         _repo.Setup(r => r.GetByIdAsync(id, ct)).ReturnsAsync(entity);
         _uow.Setup(u => u.SaveChangesAsync(ct)).Returns(Task.CompletedTask);
@@ -222,7 +234,10 @@ public sealed class AssetTypeServiceTests
         var id = 1L;
 
         var entity = AssetTypeFactory.New(name: "Periférico");
-        var req = new UpdateAssetTypeRequest("Notebook");
+        var req = new UpdateAssetTypeRequest
+        {
+            Name = "Notebook"
+        };
         var normalizedNew = "NOTEBOOK";
 
         _repo.Setup(r => r.GetByIdAsync(id, ct)).ReturnsAsync(entity);
@@ -249,7 +264,10 @@ public sealed class AssetTypeServiceTests
         var id = 1L;
 
         var entity = AssetTypeFactory.New(name: "Periférico");
-        var req = new UpdateAssetTypeRequest("  Notebook  ");
+        var req = new UpdateAssetTypeRequest
+        {
+            Name = "  Notebook  "
+        };
         var normalizedNew = "NOTEBOOK";
 
         _repo.Setup(r => r.GetByIdAsync(id, ct)).ReturnsAsync(entity);

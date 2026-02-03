@@ -3,7 +3,7 @@ using AssetManagement.Domain.Enums;
 using AssetManagement.Application.Exceptions;
 using AssetManagement.Application.Abstractions.Persistence;
 using AssetManagement.Application.Users;
-using AssetManagement.Application.Users.Dtos;
+using AssetManagement.Shared.Users.Dtos;
 using Moq;
 using FluentAssertions;
 
@@ -109,7 +109,11 @@ public sealed class UserServiceTests
     {
         // arrange
         var ct = CancellationToken.None;
-        var req = new CreateUserRequest("Ana", "  ANA@Example.com  ");
+        var req = new CreateUserRequest
+        {
+            Name = "Ana",
+            Email = "  ANA@Example.com  "
+        };
         var normalizedEmail = "ana@example.com";
 
         _users.Setup(r => r.ExistsByEmailAsync(normalizedEmail, ct)).ReturnsAsync(true);
@@ -137,7 +141,7 @@ public sealed class UserServiceTests
         var name = "Ana";
         var rawEmail = "  ANA@Example.com  ";
         var normalizedEmail = "ana@example.com";
-        var req = new CreateUserRequest(name, rawEmail);
+        var req = new CreateUserRequest{Name = name, Email = rawEmail};
 
         _users.Setup(r => r.ExistsByEmailAsync(normalizedEmail, ct)).ReturnsAsync(false);
 
@@ -182,7 +186,11 @@ public sealed class UserServiceTests
         // arrange
         var ct = CancellationToken.None;
         var id = 1L;
-        var req = new UpdateUserRequest("New", "new@example.com");
+        var req = new UpdateUserRequest
+        {
+            Name = "New",
+            Email = "new@example.com"
+        };
 
         _users.Setup(r => r.GetByIdAsync(id, ct)).ReturnsAsync((User?)null);
 
@@ -207,7 +215,11 @@ public sealed class UserServiceTests
         var id = 1L;
 
         var existing = UserFactory.New(name: "Ana", email: "ana@example.com");
-        var req = new UpdateUserRequest("Ana Updated", "  ANA@Example.com  ");
+        var req = new UpdateUserRequest
+        {
+            Name = "Ana Updated",
+            Email = "  ANA@Example.com  "
+        };
 
         _users.Setup(r => r.GetByIdAsync(id, ct)).ReturnsAsync(existing);
         _uow.Setup(u => u.SaveChangesAsync(ct)).Returns(Task.CompletedTask);
@@ -240,7 +252,11 @@ public sealed class UserServiceTests
         var id = 1L;
 
         var existing = UserFactory.New(name: "Ana", email: "ana@example.com");
-        var req = new UpdateUserRequest("Ana 2", "  ANA2@Example.com  ");
+        var req = new UpdateUserRequest
+        {
+            Name = "Ana 2",
+            Email = "  ANA2@Example.com  "
+        };
         var normalizedNewEmail = "ana2@example.com";
 
         _users.Setup(r => r.GetByIdAsync(id, ct)).ReturnsAsync(existing);
@@ -271,7 +287,7 @@ public sealed class UserServiceTests
         var newName = "Ana Updated";
         var rawNewEmail = "  ANA2@Example.com  ";
         var normalizedNewEmail = "ana2@example.com";
-        var req = new UpdateUserRequest(newName, rawNewEmail);
+        var req = new UpdateUserRequest{ Name = newName, Email = rawNewEmail } ;
 
         _users.Setup(r => r.GetByIdAsync(id, ct)).ReturnsAsync(existing);
         _users.Setup(r => r.ExistsByEmailAsync(normalizedNewEmail, ct)).ReturnsAsync(false);
