@@ -10,12 +10,23 @@ public sealed class AssetRepository : IAssetRepository
     public AssetRepository(AppDbContext db) => _db = db;
 
     public async Task<Asset?> GetByIdAsync(long id, CancellationToken ct)
-        => await _db.Assets.FirstOrDefaultAsync(x => x.Id == id, ct);
+        => await _db.Assets
+        .Include(a => a.AssignedToUser)
+        .Include(a => a.Type)
+        .FirstOrDefaultAsync(x => x.Id == id, ct);
 
+    public async Task<Asset?> GetBySerialAsync(string normalizedSerial, CancellationToken ct)
+        => await _db.Assets
+        .Include(a => a.AssignedToUser)
+        .Include(a => a.Type)
+        .FirstOrDefaultAsync(x => x.SerialNumber == normalizedSerial, ct);
+   
     public async Task<List<Asset>> GetAllAsyncNoTracking(CancellationToken ct)
         => await _db.Assets.Include(t => t.Type).AsNoTracking().OrderBy(x => x.Name).ToListAsync(ct);
     public async Task<List<Asset>> GetAllByAllocatedUserIdAsync(long userId, CancellationToken ct)
         => await _db.Assets
+            .Include(a => a.Type)
+            .Include(a => a.AssignedToUser)
             .Where(a => a.AssignedToUserId == userId)
             .AsNoTracking()
             .OrderBy(x => x.Name)
