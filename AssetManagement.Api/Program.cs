@@ -26,7 +26,12 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateAssetRequestValidator
 
 // Database
 builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    opt.UseNpgsql(
+        connectionString,
+        npgsql => npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName));
+});
 
 // Repositories & Services
 builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
