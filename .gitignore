@@ -24,15 +24,6 @@ out/
 # Visual Studio cache
 .vs/
 
-############################################
-# .NET Core / EF Core
-############################################
-
-# EF Core
-**/Migrations/*.Designer.cs
-**/Migrations/*.Designer.cs.old
-**/Migrations/*.snapshots
-
 # dotnet tools
 .dotnet/
 .dotnet/tools/
